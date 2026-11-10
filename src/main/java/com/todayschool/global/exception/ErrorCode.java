@@ -18,6 +18,7 @@ public enum ErrorCode {
     // A. 급식 만족도
 
     // B. 실습실 예약
+    ROOM_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 호실 이름입니다."),
 
     // C. 분실물 게시판
     ;
