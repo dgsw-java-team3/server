@@ -1,0 +1,11 @@
+package com.todayschool.reservation.repository;
+
+import com.todayschool.reservation.domain.Room;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+/** 호실 데이터 접근 계층입니다. */
+public interface RoomRepository extends JpaRepository<Room, Long> {
+
+    /** 같은 이름의 호실이 있는지 확인합니다. */
+    boolean existsByName(String name);
+}
