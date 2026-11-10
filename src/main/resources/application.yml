@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:todayschool
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create
+    # Run data.sql after Hibernate creates the tables
+    defer-datasource-initialization: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
