@@ -21,3 +21,7 @@ spring:
     init:
       mode: always
       encoding: UTF-8
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
