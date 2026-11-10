@@ -6,6 +6,7 @@ import com.todayschool.reservation.domain.Room;
 import com.todayschool.reservation.dto.RoomCreateRequest;
 import com.todayschool.reservation.dto.RoomResponse;
 import com.todayschool.reservation.repository.RoomRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,5 +31,11 @@ public class RoomServiceImpl implements RoomService {
                 .location(request.location())
                 .build();
         return RoomResponse.from(roomRepository.save(room));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoomResponse> getRooms() {
+        return roomRepository.findAll().stream().map(RoomResponse::from).toList();
     }
 }
