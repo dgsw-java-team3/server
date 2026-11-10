@@ -1,0 +1,36 @@
+@baseUrl = http://localhost:8080
+# 처음 실행 시 예상 ID입니다. 등록 응답의 실제 ID로 바꾸세요.
+@mealId = 6
+
+### 급식 등록 → 201
+POST {{baseUrl}}/api/meals
+Content-Type: application/json
+
+{"date":"2026-11-12","mealType":"LUNCH","menu":"쌀밥, 미역국, 제육볶음, 김치"}
+
+### 날짜별 목록 → 200
+GET {{baseUrl}}/api/meals?date=2026-11-12&page=0&size=20
+
+### 상세 → 200
+GET {{baseUrl}}/api/meals/{{mealId}}
+
+### 수정 → 200
+PUT {{baseUrl}}/api/meals/{{mealId}}
+Content-Type: application/json
+
+{"date":"2026-11-12","mealType":"LUNCH","menu":"김치볶음밥, 계란국, 사과"}
+
+### 중복 등록 → 409
+POST {{baseUrl}}/api/meals
+Content-Type: application/json
+
+{"date":"2026-11-12","mealType":"LUNCH","menu":"중복 메뉴"}
+
+### 잘못된 조회 범위 → 400
+GET {{baseUrl}}/api/meals?size=101
+
+### 삭제 → 200
+DELETE {{baseUrl}}/api/meals/{{mealId}}
+
+### 삭제 후 조회 → 404
+GET {{baseUrl}}/api/meals/{{mealId}}
