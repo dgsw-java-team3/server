@@ -6,11 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /** 모든 예외를 ErrorResponse 형식으로 바꿔 응답합니다. */
@@ -31,6 +33,11 @@ public class GlobalExceptionHandler {
                 ? ErrorCode.INVALID_INPUT_VALUE.getMessage()
                 : fieldError.getField() + ": " + fieldError.getDefaultMessage();
         return toResponse(ErrorCode.INVALID_INPUT_VALUE, message);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleMethodValidation(HandlerMethodValidationException e) {
+        return toResponse(ErrorCode.INVALID_INPUT_VALUE, "경로 ID 또는 조회 범위를 확인하세요.");
     }
 
     /** 날짜 형식, enum 값처럼 쿼리·경로 값의 타입이 잘못된 경우입니다. */
@@ -58,7 +65,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
-        return toResponse(ErrorCode.METHOD_NOT_ALLOWED, ErrorCode.METHOD_NOT_ALLOWED.getMessage());
+        return ResponseEntity.status(e.getStatusCode()).headers(e.getHeaders())
+                .body(ErrorResponse.of(ErrorCode.METHOD_NOT_ALLOWED));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException e) {
+        return ResponseEntity.status(e.getStatusCode()).headers(e.getHeaders())
+                .body(ErrorResponse.of(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
     }
 
     /** 예상하지 못한 오류입니다. 상세 내용은 로그에만 남깁니다. */
