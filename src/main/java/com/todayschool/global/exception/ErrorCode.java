@@ -21,6 +21,7 @@ public enum ErrorCode {
     DUPLICATE_MEAL(HttpStatus.CONFLICT, "해당 날짜와 구분의 급식이 이미 있습니다."),
 
     // B. 실습실 예약
+    ROOM_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 호실 이름입니다."),
 
     // C. 분실물 게시판
     LOST_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "습득물을 찾을 수 없습니다."),
