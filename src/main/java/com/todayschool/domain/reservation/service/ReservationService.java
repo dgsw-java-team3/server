@@ -8,7 +8,7 @@ public interface ReservationService {
 
     /**
      * 예약을 생성합니다. 시작 시각이 종료 시각보다 늦거나 같으면 INVALID_RESERVATION_TIME,
-     * 호실이 없으면 ROOM_NOT_FOUND 예외가 발생합니다.
+     * 호실이 없으면 ROOM_NOT_FOUND, 시간이 겹치면 RESERVATION_CONFLICT 예외가 발생합니다.
      */
     ReservationResponse createReservation(ReservationCreateRequest request);
 }

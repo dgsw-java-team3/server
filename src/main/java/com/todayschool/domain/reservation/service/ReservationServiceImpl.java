@@ -28,6 +28,11 @@ public class ReservationServiceImpl implements ReservationService {
         }
         Room room = roomRepository.findById(request.roomId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+        // 같은 호실·날짜에서 시간이 겹치면 저장하지 않습니다.
+        if (reservationRepository.existsOverlapping(
+                request.roomId(), request.reservationDate(), request.startTime(), request.endTime())) {
+            throw new BusinessException(ErrorCode.RESERVATION_CONFLICT);
+        }
         Reservation reservation = Reservation.builder()
                 .room(room)
                 .reservationDate(request.reservationDate())
