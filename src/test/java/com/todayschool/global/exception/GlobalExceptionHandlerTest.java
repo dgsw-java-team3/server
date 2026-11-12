@@ -5,12 +5,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.todayschool.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -78,6 +81,28 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("경로 값 검증이 있는 메서드에서도 본문 검증 실패는 잘못된 필드명을 반환합니다")
+    void bodyValidationFailureWithValidatedPath() throws Exception {
+        mockMvc.perform(put("/test/items/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\": \"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
+                .andExpect(jsonPath("$.error.message", containsString("name")));
+    }
+
+    @Test
+    @DisplayName("경로 값 검증 실패는 잘못된 경로 값의 이름을 반환합니다")
+    void pathValidationFailure() throws Exception {
+        mockMvc.perform(put("/test/items/0")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\": \"이름\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_INPUT_VALUE"))
+                .andExpect(jsonPath("$.error.message", containsString("id")));
+    }
+
+    @Test
     @DisplayName("존재하지 않는 enum 쿼리 값은 400 INVALID_INPUT_VALUE가 됩니다")
     void enumTypeMismatch() throws Exception {
         mockMvc.perform(get("/test/items").param("color", "PURPLE"))
@@ -128,6 +153,11 @@ class GlobalExceptionHandlerTest {
 
         @PostMapping("/test/items")
         ApiResponse<String> create(@Valid @RequestBody CreateRequest request) {
+            return ApiResponse.ok(request.name());
+        }
+
+        @PutMapping("/test/items/{id}")
+        ApiResponse<String> update(@PathVariable @Positive Long id, @Valid @RequestBody CreateRequest request) {
             return ApiResponse.ok(request.name());
         }
 
