@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.method.ParameterErrors;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -35,9 +37,17 @@ public class GlobalExceptionHandler {
         return toResponse(ErrorCode.INVALID_INPUT_VALUE, message);
     }
 
+    /**
+     * 경로·쿼리 값에 검증 애너테이션(@Positive 등)이 있는 메서드의 검증 실패입니다.
+     * 이런 메서드는 @Valid 본문 검증 실패도 이 예외로 들어오므로, 실제로 틀린 값의 이름을 꺼내 알려줍니다.
+     */
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ErrorResponse> handleMethodValidation(HandlerMethodValidationException e) {
-        return toResponse(ErrorCode.INVALID_INPUT_VALUE, "경로 ID 또는 조회 범위를 확인하세요.");
+        String message = e.getParameterValidationResults().stream()
+                .findFirst()
+                .map(this::toMessage)
+                .orElse(ErrorCode.INVALID_INPUT_VALUE.getMessage());
+        return toResponse(ErrorCode.INVALID_INPUT_VALUE, message);
     }
 
     /** 날짜 형식, enum 값처럼 쿼리·경로 값의 타입이 잘못된 경우입니다. */
@@ -80,6 +90,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception e) {
         log.error("Unhandled exception", e);
         return toResponse(ErrorCode.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+    }
+
+    private String toMessage(ParameterValidationResult result) {
+        if (result instanceof ParameterErrors errors && errors.getFieldError() != null) {
+            FieldError fieldError = errors.getFieldError();
+            return fieldError.getField() + ": " + fieldError.getDefaultMessage();
+        }
+        return result.getMethodParameter().getParameterName() + ": "
+                + result.getResolvableErrors().getFirst().getDefaultMessage();
     }
 
     private ResponseEntity<ErrorResponse> toResponse(ErrorCode errorCode, String message) {
