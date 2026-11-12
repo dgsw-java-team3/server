@@ -21,6 +21,7 @@ public enum ErrorCode {
     ROOM_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 호실 이름입니다."),
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "호실을 찾을 수 없습니다."),
     ROOM_HAS_RESERVATIONS(HttpStatus.CONFLICT, "예약이 남아 있는 호실은 삭제할 수 없습니다."),
+    INVALID_RESERVATION_TIME(HttpStatus.BAD_REQUEST, "시작 시각은 종료 시각보다 빨라야 합니다."),
 
     // C. 분실물 게시판
     ;
