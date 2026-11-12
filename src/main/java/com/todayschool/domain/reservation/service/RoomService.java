@@ -16,4 +16,7 @@ public interface RoomService {
 
     /** 호실을 수정합니다. 없으면 ROOM_NOT_FOUND, 이름이 겹치면 ROOM_DUPLICATED 예외가 발생합니다. */
     RoomResponse updateRoom(Long roomId, RoomUpdateRequest request);
+
+    /** 호실을 삭제합니다. 없으면 ROOM_NOT_FOUND, 예약이 남아 있으면 ROOM_HAS_RESERVATIONS 예외가 발생합니다. */
+    void deleteRoom(Long roomId);
 }

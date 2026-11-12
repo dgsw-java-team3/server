@@ -6,6 +6,7 @@ import com.todayschool.domain.reservation.entity.Room;
 import com.todayschool.domain.reservation.dto.RoomCreateRequest;
 import com.todayschool.domain.reservation.dto.RoomResponse;
 import com.todayschool.domain.reservation.dto.RoomUpdateRequest;
+import com.todayschool.domain.reservation.repository.ReservationRepository;
 import com.todayschool.domain.reservation.repository.RoomRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
+    private final ReservationRepository reservationRepository;
 
     @Override
     @Transactional
@@ -51,5 +53,16 @@ public class RoomServiceImpl implements RoomService {
         }
         room.update(request.name(), request.capacity(), request.location());
         return RoomResponse.from(room);
+    }
+
+    @Override
+    @Transactional
+    public void deleteRoom(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+        if (reservationRepository.existsByRoomId(roomId)) {
+            throw new BusinessException(ErrorCode.ROOM_HAS_RESERVATIONS);
+        }
+        roomRepository.delete(room);
     }
 }
