@@ -19,6 +19,7 @@ public enum ErrorCode {
 
     // B. 실습실 예약
     ROOM_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 호실 이름입니다."),
+    ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "호실을 찾을 수 없습니다."),
 
     // C. 분실물 게시판
     ;

@@ -5,6 +5,7 @@ import com.todayschool.global.exception.ErrorCode;
 import com.todayschool.domain.reservation.entity.Room;
 import com.todayschool.domain.reservation.dto.RoomCreateRequest;
 import com.todayschool.domain.reservation.dto.RoomResponse;
+import com.todayschool.domain.reservation.dto.RoomUpdateRequest;
 import com.todayschool.domain.reservation.repository.RoomRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +38,18 @@ public class RoomServiceImpl implements RoomService {
     @Transactional(readOnly = true)
     public List<RoomResponse> getRooms() {
         return roomRepository.findAll().stream().map(RoomResponse::from).toList();
+    }
+
+    @Override
+    @Transactional
+    public RoomResponse updateRoom(Long roomId, RoomUpdateRequest request) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+        // 본인을 제외한 다른 호실과 이름이 겹치는지 검사합니다.
+        if (roomRepository.existsByNameAndIdNot(request.name(), roomId)) {
+            throw new BusinessException(ErrorCode.ROOM_DUPLICATED);
+        }
+        room.update(request.name(), request.capacity(), request.location());
+        return RoomResponse.from(room);
     }
 }
