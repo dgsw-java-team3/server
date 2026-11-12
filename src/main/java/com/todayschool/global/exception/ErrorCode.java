@@ -23,6 +23,8 @@ public enum ErrorCode {
     // B. 실습실 예약
 
     // C. 분실물 게시판
+    LOST_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "습득물을 찾을 수 없습니다."),
+    LOST_ITEM_ALREADY_RETURNED(HttpStatus.CONFLICT, "이미 반환 완료된 습득물입니다."),
     ;
 
     private final HttpStatus status;
