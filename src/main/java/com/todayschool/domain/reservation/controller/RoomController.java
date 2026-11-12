@@ -1,9 +1,9 @@
-package com.todayschool.reservation.controller;
+package com.todayschool.domain.reservation.controller;
 
 import com.todayschool.global.response.ApiResponse;
-import com.todayschool.reservation.dto.RoomCreateRequest;
-import com.todayschool.reservation.dto.RoomResponse;
-import com.todayschool.reservation.service.RoomService;
+import com.todayschool.domain.reservation.dto.RoomCreateRequest;
+import com.todayschool.domain.reservation.dto.RoomResponse;
+import com.todayschool.domain.reservation.service.RoomService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.todayschool.reservation.dto;
+package com.todayschool.domain.reservation.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

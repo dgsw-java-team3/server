@@ -1,4 +1,4 @@
-package com.todayschool.reservation.domain;
+package com.todayschool.domain.reservation.entity;
 
 import com.todayschool.global.entity.BaseTimeEntity;
 import jakarta.persistence.Column;

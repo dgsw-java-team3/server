@@ -1,7 +1,7 @@
-package com.todayschool.reservation.service;
+package com.todayschool.domain.reservation.service;
 
-import com.todayschool.reservation.dto.RoomCreateRequest;
-import com.todayschool.reservation.dto.RoomResponse;
+import com.todayschool.domain.reservation.dto.RoomCreateRequest;
+import com.todayschool.domain.reservation.dto.RoomResponse;
 import java.util.List;
 
 /** 호실 등록·조회 비즈니스 로직입니다. */

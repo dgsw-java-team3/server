@@ -1,6 +1,6 @@
-package com.todayschool.reservation.repository;
+package com.todayschool.domain.reservation.repository;
 
-import com.todayschool.reservation.domain.Room;
+import com.todayschool.domain.reservation.entity.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /** 호실 데이터 접근 계층입니다. */

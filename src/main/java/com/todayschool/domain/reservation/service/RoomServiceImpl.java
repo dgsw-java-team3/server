@@ -1,11 +1,11 @@
-package com.todayschool.reservation.service;
+package com.todayschool.domain.reservation.service;
 
 import com.todayschool.global.exception.BusinessException;
 import com.todayschool.global.exception.ErrorCode;
-import com.todayschool.reservation.domain.Room;
-import com.todayschool.reservation.dto.RoomCreateRequest;
-import com.todayschool.reservation.dto.RoomResponse;
-import com.todayschool.reservation.repository.RoomRepository;
+import com.todayschool.domain.reservation.entity.Room;
+import com.todayschool.domain.reservation.dto.RoomCreateRequest;
+import com.todayschool.domain.reservation.dto.RoomResponse;
+import com.todayschool.domain.reservation.repository.RoomRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
