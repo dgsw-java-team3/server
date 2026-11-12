@@ -1,6 +1,6 @@
-package com.todayschool.lostitem.dto;
+package com.todayschool.domain.lostitem.dto;
 
-import com.todayschool.lostitem.domain.ItemCategory;
+import com.todayschool.domain.lostitem.entity.ItemCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

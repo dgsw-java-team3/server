@@ -1,4 +1,4 @@
-package com.todayschool.lostitem.domain;
+package com.todayschool.domain.lostitem.entity;
 
 /** 반환 신청 처리 상태입니다. */
 public enum ClaimStatus {

@@ -1,8 +1,8 @@
-package com.todayschool.lostitem.service;
+package com.todayschool.domain.lostitem.service;
 
-import com.todayschool.lostitem.dto.LostItemCreateRequest;
-import com.todayschool.lostitem.dto.LostItemResponse;
-import com.todayschool.lostitem.dto.LostItemUpdateRequest;
+import com.todayschool.domain.lostitem.dto.LostItemCreateRequest;
+import com.todayschool.domain.lostitem.dto.LostItemResponse;
+import com.todayschool.domain.lostitem.dto.LostItemUpdateRequest;
 
 public interface LostItemService {
     LostItemResponse createLostItem(LostItemCreateRequest request);

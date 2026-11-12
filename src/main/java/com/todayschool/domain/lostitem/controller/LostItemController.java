@@ -1,10 +1,10 @@
-package com.todayschool.lostitem.controller;
+package com.todayschool.domain.lostitem.controller;
 
 import com.todayschool.global.response.ApiResponse;
-import com.todayschool.lostitem.dto.LostItemCreateRequest;
-import com.todayschool.lostitem.dto.LostItemResponse;
-import com.todayschool.lostitem.dto.LostItemUpdateRequest;
-import com.todayschool.lostitem.service.LostItemService;
+import com.todayschool.domain.lostitem.dto.LostItemCreateRequest;
+import com.todayschool.domain.lostitem.dto.LostItemResponse;
+import com.todayschool.domain.lostitem.dto.LostItemUpdateRequest;
+import com.todayschool.domain.lostitem.service.LostItemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
