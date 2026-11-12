@@ -1,14 +1,14 @@
-package com.todayschool.lostitem.service;
+package com.todayschool.domain.lostitem.service;
 
 import static com.todayschool.global.exception.ErrorCode.LOST_ITEM_ALREADY_RETURNED;
 import static com.todayschool.global.exception.ErrorCode.LOST_ITEM_NOT_FOUND;
 
 import com.todayschool.global.exception.BusinessException;
-import com.todayschool.lostitem.domain.LostItem;
-import com.todayschool.lostitem.dto.LostItemCreateRequest;
-import com.todayschool.lostitem.dto.LostItemResponse;
-import com.todayschool.lostitem.dto.LostItemUpdateRequest;
-import com.todayschool.lostitem.repository.LostItemRepository;
+import com.todayschool.domain.lostitem.entity.LostItem;
+import com.todayschool.domain.lostitem.dto.LostItemCreateRequest;
+import com.todayschool.domain.lostitem.dto.LostItemResponse;
+import com.todayschool.domain.lostitem.dto.LostItemUpdateRequest;
+import com.todayschool.domain.lostitem.repository.LostItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

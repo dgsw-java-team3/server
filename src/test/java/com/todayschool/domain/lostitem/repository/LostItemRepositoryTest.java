@@ -1,12 +1,12 @@
-package com.todayschool.lostitem.repository;
+package com.todayschool.domain.lostitem.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.todayschool.lostitem.domain.Claim;
-import com.todayschool.lostitem.domain.ClaimStatus;
-import com.todayschool.lostitem.domain.ItemCategory;
-import com.todayschool.lostitem.domain.ItemStatus;
-import com.todayschool.lostitem.domain.LostItem;
+import com.todayschool.domain.lostitem.entity.Claim;
+import com.todayschool.domain.lostitem.entity.ClaimStatus;
+import com.todayschool.domain.lostitem.entity.ItemCategory;
+import com.todayschool.domain.lostitem.entity.ItemStatus;
+import com.todayschool.domain.lostitem.entity.LostItem;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;

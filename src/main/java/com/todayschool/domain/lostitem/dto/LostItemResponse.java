@@ -1,7 +1,7 @@
-package com.todayschool.lostitem.dto;
+package com.todayschool.domain.lostitem.dto;
 
-import com.todayschool.lostitem.domain.ItemCategory;
-import com.todayschool.lostitem.domain.ItemStatus;
+import com.todayschool.domain.lostitem.entity.ItemCategory;
+import com.todayschool.domain.lostitem.entity.ItemStatus;
 import java.time.LocalDate;
 
 public record LostItemResponse(Long id, String title, String description, ItemCategory category,
