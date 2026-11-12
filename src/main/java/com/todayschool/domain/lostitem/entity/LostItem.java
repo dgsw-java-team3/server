@@ -1,4 +1,4 @@
-package com.todayschool.lostitem.domain;
+package com.todayschool.domain.lostitem.entity;
 
 import com.todayschool.global.entity.BaseTimeEntity;
 import jakarta.persistence.CascadeType;
