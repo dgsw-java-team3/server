@@ -55,12 +55,14 @@ class LostItemRepositoryTest {
         // 연관 목록(claims)을 DB에서 다시 읽도록 영속성 컨텍스트를 비웁니다.
         entityManager.flush();
         entityManager.clear();
+        // data.sql 더미 신청이 있으므로 전체 개수 대신 삭제 전후 차이로 확인합니다.
+        long claimCountBefore = claimRepository.count();
 
         lostItemRepository.deleteById(item.getId());
         entityManager.flush();
 
         assertThat(lostItemRepository.findById(item.getId())).isEmpty();
-        assertThat(claimRepository.count()).isZero();
+        assertThat(claimRepository.count()).isEqualTo(claimCountBefore - 2);
     }
 
     private LostItem lostItem(String title) {
