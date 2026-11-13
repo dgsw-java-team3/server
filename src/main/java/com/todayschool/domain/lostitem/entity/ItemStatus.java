@@ -1,4 +1,4 @@
-package com.todayschool.lostitem.domain;
+package com.todayschool.domain.lostitem.entity;
 
 /** 습득물 보관 상태입니다. */
 public enum ItemStatus {

@@ -1,12 +1,12 @@
-package com.todayschool.lostitem.repository;
+package com.todayschool.domain.lostitem.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.todayschool.lostitem.domain.Claim;
-import com.todayschool.lostitem.domain.ClaimStatus;
-import com.todayschool.lostitem.domain.ItemCategory;
-import com.todayschool.lostitem.domain.ItemStatus;
-import com.todayschool.lostitem.domain.LostItem;
+import com.todayschool.domain.lostitem.entity.Claim;
+import com.todayschool.domain.lostitem.entity.ClaimStatus;
+import com.todayschool.domain.lostitem.entity.ItemCategory;
+import com.todayschool.domain.lostitem.entity.ItemStatus;
+import com.todayschool.domain.lostitem.entity.LostItem;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
@@ -55,12 +55,14 @@ class LostItemRepositoryTest {
         // 연관 목록(claims)을 DB에서 다시 읽도록 영속성 컨텍스트를 비웁니다.
         entityManager.flush();
         entityManager.clear();
+        // data.sql 더미 신청이 있으므로 전체 개수 대신 삭제 전후 차이로 확인합니다.
+        long claimCountBefore = claimRepository.count();
 
         lostItemRepository.deleteById(item.getId());
         entityManager.flush();
 
         assertThat(lostItemRepository.findById(item.getId())).isEmpty();
-        assertThat(claimRepository.count()).isZero();
+        assertThat(claimRepository.count()).isEqualTo(claimCountBefore - 2);
     }
 
     private LostItem lostItem(String title) {

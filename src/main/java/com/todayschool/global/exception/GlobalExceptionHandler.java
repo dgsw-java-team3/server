@@ -5,12 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.method.ParameterErrors;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /** 모든 예외를 ErrorResponse 형식으로 바꿔 응답합니다. */
@@ -30,6 +34,19 @@ public class GlobalExceptionHandler {
         String message = fieldError == null
                 ? ErrorCode.INVALID_INPUT_VALUE.getMessage()
                 : fieldError.getField() + ": " + fieldError.getDefaultMessage();
+        return toResponse(ErrorCode.INVALID_INPUT_VALUE, message);
+    }
+
+    /**
+     * 경로·쿼리 값에 검증 애너테이션(@Positive 등)이 있는 메서드의 검증 실패입니다.
+     * 이런 메서드는 @Valid 본문 검증 실패도 이 예외로 들어오므로, 실제로 틀린 값의 이름을 꺼내 알려줍니다.
+     */
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleMethodValidation(HandlerMethodValidationException e) {
+        String message = e.getParameterValidationResults().stream()
+                .findFirst()
+                .map(this::toMessage)
+                .orElse(ErrorCode.INVALID_INPUT_VALUE.getMessage());
         return toResponse(ErrorCode.INVALID_INPUT_VALUE, message);
     }
 
@@ -58,7 +75,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
-        return toResponse(ErrorCode.METHOD_NOT_ALLOWED, ErrorCode.METHOD_NOT_ALLOWED.getMessage());
+        return ResponseEntity.status(e.getStatusCode()).headers(e.getHeaders())
+                .body(ErrorResponse.of(ErrorCode.METHOD_NOT_ALLOWED));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException e) {
+        return ResponseEntity.status(e.getStatusCode()).headers(e.getHeaders())
+                .body(ErrorResponse.of(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
     }
 
     /** 예상하지 못한 오류입니다. 상세 내용은 로그에만 남깁니다. */
@@ -66,6 +90,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception e) {
         log.error("Unhandled exception", e);
         return toResponse(ErrorCode.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+    }
+
+    private String toMessage(ParameterValidationResult result) {
+        if (result instanceof ParameterErrors errors && errors.getFieldError() != null) {
+            FieldError fieldError = errors.getFieldError();
+            return fieldError.getField() + ": " + fieldError.getDefaultMessage();
+        }
+        return result.getMethodParameter().getParameterName() + ": "
+                + result.getResolvableErrors().getFirst().getDefaultMessage();
     }
 
     private ResponseEntity<ErrorResponse> toResponse(ErrorCode errorCode, String message) {

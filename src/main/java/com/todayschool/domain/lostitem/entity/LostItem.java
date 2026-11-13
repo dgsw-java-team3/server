@@ -1,4 +1,4 @@
-package com.todayschool.lostitem.domain;
+package com.todayschool.domain.lostitem.entity;
 
 import com.todayschool.global.entity.BaseTimeEntity;
 import jakarta.persistence.CascadeType;
@@ -61,5 +61,18 @@ public class LostItem extends BaseTimeEntity {
         this.foundPlace = foundPlace;
         this.foundDate = foundDate;
         this.status = ItemStatus.STORED;
+    }
+
+    public void update(String title, String description, ItemCategory category,
+                       String foundPlace, LocalDate foundDate) {
+        this.title = title;
+        this.description = description;
+        this.category = category;
+        this.foundPlace = foundPlace;
+        this.foundDate = foundDate;
+    }
+
+    public boolean isReturned() {
+        return status == ItemStatus.RETURNED;
     }
 }
