@@ -16,4 +16,7 @@ public interface ReservationService {
 
     /** 예약 현황을 조회합니다. 호실·날짜는 모두 선택 조건이며, 없으면 전체를 조회합니다. */
     List<ReservationResponse> getReservations(Long roomId, LocalDate date);
+
+    /** 예약을 취소(삭제)합니다. 없으면 RESERVATION_NOT_FOUND 예외가 발생합니다. */
+    void cancelReservation(Long reservationId);
 }

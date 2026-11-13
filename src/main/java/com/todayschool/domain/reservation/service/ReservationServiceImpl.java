@@ -53,4 +53,12 @@ public class ReservationServiceImpl implements ReservationService {
                 .map(ReservationResponse::from)
                 .toList();
     }
+
+    @Override
+    @Transactional
+    public void cancelReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+        reservationRepository.delete(reservation);
+    }
 }
