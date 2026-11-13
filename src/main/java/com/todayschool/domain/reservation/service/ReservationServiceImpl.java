@@ -8,6 +8,8 @@ import com.todayschool.domain.reservation.repository.ReservationRepository;
 import com.todayschool.domain.reservation.repository.RoomRepository;
 import com.todayschool.global.exception.BusinessException;
 import com.todayschool.global.exception.ErrorCode;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,5 +44,13 @@ public class ReservationServiceImpl implements ReservationService {
                 .purpose(request.purpose())
                 .build();
         return ReservationResponse.from(reservationRepository.save(reservation));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReservationResponse> getReservations(Long roomId, LocalDate date) {
+        return reservationRepository.findAllByCondition(roomId, date).stream()
+                .map(ReservationResponse::from)
+                .toList();
     }
 }
