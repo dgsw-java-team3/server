@@ -3,13 +3,17 @@ package com.todayschool.domain.reservation.controller;
 import com.todayschool.global.response.ApiResponse;
 import com.todayschool.domain.reservation.dto.RoomCreateRequest;
 import com.todayschool.domain.reservation.dto.RoomResponse;
+import com.todayschool.domain.reservation.dto.RoomUpdateRequest;
 import com.todayschool.domain.reservation.service.RoomService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -34,5 +38,19 @@ public class RoomController {
     @GetMapping
     public ApiResponse<List<RoomResponse>> getRooms() {
         return ApiResponse.ok(roomService.getRooms());
+    }
+
+    /** B-3 호실 수정. */
+    @PutMapping("/{roomId}")
+    public ApiResponse<RoomResponse> updateRoom(
+            @PathVariable Long roomId, @Valid @RequestBody RoomUpdateRequest request) {
+        return ApiResponse.ok(roomService.updateRoom(roomId, request));
+    }
+
+    /** B-4 호실 삭제. 성공하면 200과 data null을 응답합니다. */
+    @DeleteMapping("/{roomId}")
+    public ApiResponse<Void> deleteRoom(@PathVariable Long roomId) {
+        roomService.deleteRoom(roomId);
+        return ApiResponse.ok(null, "호실이 삭제되었습니다.");
     }
 }
