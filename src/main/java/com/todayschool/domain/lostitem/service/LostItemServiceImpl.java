@@ -1,15 +1,20 @@
 package com.todayschool.domain.lostitem.service;
 
+import static com.todayschool.global.exception.ErrorCode.CLAIM_ALREADY_PROCESSED;
+import static com.todayschool.global.exception.ErrorCode.CLAIM_NOT_FOUND;
+import static com.todayschool.global.exception.ErrorCode.CLAIM_STATUS_INVALID;
 import static com.todayschool.global.exception.ErrorCode.LOST_ITEM_ALREADY_RETURNED;
 import static com.todayschool.global.exception.ErrorCode.LOST_ITEM_NOT_FOUND;
 
 import com.todayschool.global.exception.BusinessException;
 import com.todayschool.domain.lostitem.entity.Claim;
+import com.todayschool.domain.lostitem.entity.ClaimStatus;
 import com.todayschool.domain.lostitem.entity.ItemCategory;
 import com.todayschool.domain.lostitem.entity.ItemStatus;
 import com.todayschool.domain.lostitem.entity.LostItem;
 import com.todayschool.domain.lostitem.dto.ClaimCreateRequest;
 import com.todayschool.domain.lostitem.dto.ClaimResponse;
+import com.todayschool.domain.lostitem.dto.ClaimStatusUpdateRequest;
 import com.todayschool.domain.lostitem.dto.LostItemCreateRequest;
 import com.todayschool.domain.lostitem.dto.LostItemResponse;
 import com.todayschool.domain.lostitem.dto.LostItemStatsResponse;
@@ -104,6 +109,39 @@ public class LostItemServiceImpl implements LostItemService {
         return claimRepository.findByLostItemId(itemId).stream()
                 .map(this::toClaimResponse)
                 .toList();
+    }
+
+    /**
+     * 승인하면 같은 습득물의 다른 대기 신청을 모두 거절하고 습득물을 반환 완료로 바꿉니다.
+     * 세 변경이 한 트랜잭션이라 중간에 실패하면 모두 되돌아갑니다.
+     */
+    @Override
+    @Transactional
+    public ClaimResponse updateClaimStatus(Long claimId, ClaimStatusUpdateRequest request) {
+        if (request.status() == ClaimStatus.PENDING) {
+            throw new BusinessException(CLAIM_STATUS_INVALID);
+        }
+        Claim claim = claimRepository.findById(claimId)
+                .orElseThrow(() -> new BusinessException(CLAIM_NOT_FOUND));
+        if (!claim.isPending()) {
+            throw new BusinessException(CLAIM_ALREADY_PROCESSED);
+        }
+
+        if (request.status() == ClaimStatus.REJECTED) {
+            claim.reject();
+            return toClaimResponse(claim);
+        }
+
+        LostItem lostItem = claim.getLostItem();
+        if (lostItem.isReturned()) {
+            throw new BusinessException(LOST_ITEM_ALREADY_RETURNED);
+        }
+        claimRepository.findByLostItemIdAndStatus(lostItem.getId(), ClaimStatus.PENDING).stream()
+                .filter(other -> !other.getId().equals(claim.getId()))
+                .forEach(Claim::reject);
+        claim.approve();
+        lostItem.markReturned();
+        return toClaimResponse(claim);
     }
 
     private LostItem findLostItem(Long itemId) {

@@ -3,6 +3,7 @@ package com.todayschool.domain.lostitem.controller;
 import com.todayschool.global.response.ApiResponse;
 import com.todayschool.domain.lostitem.dto.ClaimCreateRequest;
 import com.todayschool.domain.lostitem.dto.ClaimResponse;
+import com.todayschool.domain.lostitem.dto.ClaimStatusUpdateRequest;
 import com.todayschool.domain.lostitem.dto.LostItemCreateRequest;
 import com.todayschool.domain.lostitem.dto.LostItemResponse;
 import com.todayschool.domain.lostitem.dto.LostItemStatsResponse;
@@ -31,14 +32,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "분실물")
 @RestController
-@RequestMapping("/api/lost-items")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class LostItemController {
 
     private final LostItemService lostItemService;
 
     @Operation(summary = "습득물 등록", description = "등록하면 상태는 보관 중(STORED)입니다.")
-    @PostMapping
+    @PostMapping("/lost-items")
     public ResponseEntity<ApiResponse<LostItemResponse>> createLostItem(
             @Valid @RequestBody LostItemCreateRequest request) {
         LostItemResponse lostItem = lostItemService.createLostItem(request);
@@ -48,7 +49,7 @@ public class LostItemController {
 
     @Operation(summary = "습득물 조건 검색",
             description = "조건은 모두 선택이며 함께 쓸 수 있습니다. 장소·키워드는 부분 일치, 최신 발견일 순입니다.")
-    @GetMapping
+    @GetMapping("/lost-items")
     public ApiResponse<List<LostItemResponse>> searchLostItems(
             @RequestParam(required = false) ItemCategory category,
             @RequestParam(required = false) String place,
@@ -58,33 +59,33 @@ public class LostItemController {
     }
 
     @Operation(summary = "카테고리별 습득물 통계", description = "카테고리별 등록 건수, 반환 완료 건수, 반환율(0~1)입니다.")
-    @GetMapping("/stats")
+    @GetMapping("/lost-items/stats")
     public ApiResponse<List<LostItemStatsResponse>> getStats() {
         return ApiResponse.ok(lostItemService.getStats());
     }
 
     @Operation(summary = "습득물 상세 조회")
-    @GetMapping("/{itemId}")
+    @GetMapping("/lost-items/{itemId}")
     public ApiResponse<LostItemResponse> getLostItem(@PathVariable @Positive Long itemId) {
         return ApiResponse.ok(lostItemService.getLostItem(itemId));
     }
 
     @Operation(summary = "습득물 수정", description = "반환 완료(RETURNED)된 습득물은 수정할 수 없습니다(409).")
-    @PutMapping("/{itemId}")
+    @PutMapping("/lost-items/{itemId}")
     public ApiResponse<LostItemResponse> updateLostItem(@PathVariable @Positive Long itemId,
                                                         @Valid @RequestBody LostItemUpdateRequest request) {
         return ApiResponse.ok(lostItemService.updateLostItem(itemId, request));
     }
 
     @Operation(summary = "습득물 삭제", description = "반환 신청도 함께 삭제됩니다.")
-    @DeleteMapping("/{itemId}")
+    @DeleteMapping("/lost-items/{itemId}")
     public ApiResponse<Void> deleteLostItem(@PathVariable @Positive Long itemId) {
         lostItemService.deleteLostItem(itemId);
         return ApiResponse.ok(null, "습득물이 삭제되었습니다.");
     }
 
     @Operation(summary = "반환 신청", description = "반환 완료(RETURNED)된 습득물에는 신청할 수 없습니다(409).")
-    @PostMapping("/{itemId}/claims")
+    @PostMapping("/lost-items/{itemId}/claims")
     public ResponseEntity<ApiResponse<ClaimResponse>> createClaim(@PathVariable @Positive Long itemId,
                                                                   @Valid @RequestBody ClaimCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -92,8 +93,16 @@ public class LostItemController {
     }
 
     @Operation(summary = "반환 신청 목록 조회")
-    @GetMapping("/{itemId}/claims")
+    @GetMapping("/lost-items/{itemId}/claims")
     public ApiResponse<List<ClaimResponse>> getClaims(@PathVariable @Positive Long itemId) {
         return ApiResponse.ok(lostItemService.getClaims(itemId));
+    }
+
+    @Operation(summary = "반환 신청 승인·거절",
+            description = "승인하면 같은 습득물의 다른 대기 신청은 거절되고 습득물은 반환 완료(RETURNED)가 됩니다.")
+    @PutMapping("/claims/{claimId}/status")
+    public ApiResponse<ClaimResponse> updateClaimStatus(@PathVariable @Positive Long claimId,
+                                                        @Valid @RequestBody ClaimStatusUpdateRequest request) {
+        return ApiResponse.ok(lostItemService.updateClaimStatus(claimId, request));
     }
 }

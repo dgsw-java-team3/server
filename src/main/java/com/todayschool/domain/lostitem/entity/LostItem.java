@@ -72,6 +72,11 @@ public class LostItem extends BaseTimeEntity {
         this.foundDate = foundDate;
     }
 
+    /** 반환 신청이 승인되면 호출합니다. */
+    public void markReturned() {
+        this.status = ItemStatus.RETURNED;
+    }
+
     public boolean isReturned() {
         return status == ItemStatus.RETURNED;
     }
