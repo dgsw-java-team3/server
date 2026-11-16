@@ -2,6 +2,7 @@ package com.todayschool.global.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.todayschool.global.config.QuerydslConfig;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.GeneratedValue;
@@ -11,8 +12,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
+/** 모든 Repository가 함께 뜨므로 QueryDSL을 쓰는 LostItemRepository용 JPAQueryFactory를 불러옵니다. */
 @DataJpaTest
+@Import(QuerydslConfig.class)
 class BaseTimeEntityTest {
 
     @Autowired
