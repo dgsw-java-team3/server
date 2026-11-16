@@ -2,6 +2,7 @@ package com.todayschool.domain.lostitem.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.todayschool.domain.lostitem.dto.LostItemStatsResponse;
 import com.todayschool.domain.lostitem.entity.Claim;
 import com.todayschool.domain.lostitem.entity.ClaimStatus;
 import com.todayschool.domain.lostitem.entity.ItemCategory;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /** @DataJpaTest는 JPA 빈만 올리므로 검색에 쓰는 JPAQueryFactory 설정을 직접 불러옵니다. */
 @DataJpaTest
@@ -109,6 +111,30 @@ class LostItemRepositoryTest {
         List<LostItem> result = lostItemRepository.search(ItemCategory.CLOTHING, "테스트동 1층 매점", null, null);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("통계는 카테고리별 전체 수와 반환 완료 수를 세고 반환율을 계산합니다")
+    void countByCategory() {
+        // data.sql 더미가 있으므로 저장 전후 차이로 확인합니다.
+        LostItemStatsResponse before = clothingStats();
+        lostItemRepository.save(lostItem("남색 후드티", ItemCategory.CLOTHING, "테스트동 4층", 1));
+        LostItem returned = lostItem("검은 점퍼", ItemCategory.CLOTHING, "테스트동 4층", 2);
+        ReflectionTestUtils.setField(returned, "status", ItemStatus.RETURNED);
+        lostItemRepository.save(returned);
+
+        LostItemStatsResponse after = clothingStats();
+
+        assertThat(after.totalCount()).isEqualTo(before.totalCount() + 2);
+        assertThat(after.returnedCount()).isEqualTo(before.returnedCount() + 1);
+        assertThat(after.returnRate()).isEqualTo((double) after.returnedCount() / after.totalCount());
+    }
+
+    private LostItemStatsResponse clothingStats() {
+        return lostItemRepository.countByCategory().stream()
+                .filter(stats -> stats.category() == ItemCategory.CLOTHING)
+                .findFirst()
+                .orElse(new LostItemStatsResponse(ItemCategory.CLOTHING, 0L, 0L));
     }
 
     private LostItem lostItem(String title) {

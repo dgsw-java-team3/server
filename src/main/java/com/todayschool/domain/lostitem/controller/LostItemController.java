@@ -5,6 +5,7 @@ import com.todayschool.domain.lostitem.dto.ClaimCreateRequest;
 import com.todayschool.domain.lostitem.dto.ClaimResponse;
 import com.todayschool.domain.lostitem.dto.LostItemCreateRequest;
 import com.todayschool.domain.lostitem.dto.LostItemResponse;
+import com.todayschool.domain.lostitem.dto.LostItemStatsResponse;
 import com.todayschool.domain.lostitem.dto.LostItemUpdateRequest;
 import com.todayschool.domain.lostitem.entity.ItemCategory;
 import com.todayschool.domain.lostitem.entity.ItemStatus;
@@ -54,6 +55,12 @@ public class LostItemController {
             @RequestParam(required = false) ItemStatus status,
             @RequestParam(required = false) String keyword) {
         return ApiResponse.ok(lostItemService.searchLostItems(category, place, status, keyword));
+    }
+
+    @Operation(summary = "카테고리별 습득물 통계", description = "카테고리별 등록 건수, 반환 완료 건수, 반환율(0~1)입니다.")
+    @GetMapping("/stats")
+    public ApiResponse<List<LostItemStatsResponse>> getStats() {
+        return ApiResponse.ok(lostItemService.getStats());
     }
 
     @Operation(summary = "습득물 상세 조회")

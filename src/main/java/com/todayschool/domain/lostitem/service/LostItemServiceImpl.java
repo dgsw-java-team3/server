@@ -12,6 +12,7 @@ import com.todayschool.domain.lostitem.dto.ClaimCreateRequest;
 import com.todayschool.domain.lostitem.dto.ClaimResponse;
 import com.todayschool.domain.lostitem.dto.LostItemCreateRequest;
 import com.todayschool.domain.lostitem.dto.LostItemResponse;
+import com.todayschool.domain.lostitem.dto.LostItemStatsResponse;
 import com.todayschool.domain.lostitem.dto.LostItemUpdateRequest;
 import com.todayschool.domain.lostitem.repository.ClaimRepository;
 import com.todayschool.domain.lostitem.repository.LostItemRepository;
@@ -72,6 +73,11 @@ public class LostItemServiceImpl implements LostItemService {
     @Transactional
     public void deleteLostItem(Long itemId) {
         lostItemRepository.delete(findLostItem(itemId));
+    }
+
+    @Override
+    public List<LostItemStatsResponse> getStats() {
+        return lostItemRepository.countByCategory();
     }
 
     /** 반환 완료된 습득물은 이미 주인에게 돌아갔으므로 새 신청을 받지 않습니다. */
