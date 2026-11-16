@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.todayschool.domain.lostitem.dto.ClaimCreateRequest;
 import com.todayschool.domain.lostitem.dto.ClaimResponse;
+import com.todayschool.domain.lostitem.dto.ClaimStatusUpdateRequest;
 import com.todayschool.domain.lostitem.dto.LostItemUpdateRequest;
 import com.todayschool.domain.lostitem.entity.Claim;
 import com.todayschool.domain.lostitem.entity.ClaimStatus;
@@ -21,6 +22,7 @@ import com.todayschool.domain.lostitem.repository.LostItemRepository;
 import com.todayschool.global.exception.BusinessException;
 import com.todayschool.global.exception.ErrorCode;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -101,6 +103,57 @@ class LostItemServiceTest {
         verify(claimRepository, never()).findByLostItemId(anyLong());
     }
 
+    @Test
+    @DisplayName("신청을 승인하면 같은 습득물의 다른 대기 신청은 거절되고 습득물은 반환 완료가 됩니다")
+    void approveClaimRejectsOthersAndReturnsItem() {
+        LostItem item = lostItem(1L, ItemStatus.STORED);
+        Claim target = claim(10L, item, ClaimStatus.PENDING);
+        Claim other = claim(11L, item, ClaimStatus.PENDING);
+        when(claimRepository.findById(10L)).thenReturn(Optional.of(target));
+        when(claimRepository.findByLostItemIdAndStatus(1L, ClaimStatus.PENDING)).thenReturn(List.of(target, other));
+
+        ClaimResponse response = lostItemService.updateClaimStatus(10L, new ClaimStatusUpdateRequest(ClaimStatus.APPROVED));
+
+        assertThat(response.status()).isEqualTo(ClaimStatus.APPROVED);
+        assertThat(other.getStatus()).isEqualTo(ClaimStatus.REJECTED);
+        assertThat(item.getStatus()).isEqualTo(ItemStatus.RETURNED);
+    }
+
+    @Test
+    @DisplayName("신청을 거절하면 신청만 거절되고 습득물은 보관 중으로 남습니다")
+    void rejectClaimKeepsItemStored() {
+        LostItem item = lostItem(1L, ItemStatus.STORED);
+        when(claimRepository.findById(10L)).thenReturn(Optional.of(claim(10L, item, ClaimStatus.PENDING)));
+
+        ClaimResponse response = lostItemService.updateClaimStatus(10L, new ClaimStatusUpdateRequest(ClaimStatus.REJECTED));
+
+        assertThat(response.status()).isEqualTo(ClaimStatus.REJECTED);
+        assertThat(item.getStatus()).isEqualTo(ItemStatus.STORED);
+    }
+
+    @Test
+    @DisplayName("이미 처리된 신청을 다시 처리하면 CLAIM_ALREADY_PROCESSED 예외가 발생합니다")
+    void updateProcessedClaimThrows() {
+        LostItem item = lostItem(1L, ItemStatus.STORED);
+        Claim rejected = claim(10L, item, ClaimStatus.REJECTED);
+        when(claimRepository.findById(10L)).thenReturn(Optional.of(rejected));
+
+        assertThatThrownBy(() -> lostItemService.updateClaimStatus(10L, new ClaimStatusUpdateRequest(ClaimStatus.APPROVED)))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode").isEqualTo(ErrorCode.CLAIM_ALREADY_PROCESSED);
+        assertThat(rejected.getStatus()).isEqualTo(ClaimStatus.REJECTED);
+        assertThat(item.getStatus()).isEqualTo(ItemStatus.STORED);
+    }
+
+    @Test
+    @DisplayName("대기(PENDING)로 바꾸는 요청은 신청을 조회하지 않고 CLAIM_STATUS_INVALID 예외가 발생합니다")
+    void updateClaimToPendingThrows() {
+        assertThatThrownBy(() -> lostItemService.updateClaimStatus(10L, new ClaimStatusUpdateRequest(ClaimStatus.PENDING)))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode").isEqualTo(ErrorCode.CLAIM_STATUS_INVALID);
+        verify(claimRepository, never()).findById(anyLong());
+    }
+
     /** 테스트용 습득물입니다. id와 상태는 DB 없이 지정하려고 직접 넣습니다. */
     private LostItem lostItem(Long id, ItemStatus status) {
         LostItem lostItem = LostItem.builder()
@@ -113,5 +166,17 @@ class LostItemServiceTest {
         ReflectionTestUtils.setField(lostItem, "id", id);
         ReflectionTestUtils.setField(lostItem, "status", status);
         return lostItem;
+    }
+
+    /** 테스트용 반환 신청입니다. 습득물과 같은 이유로 id와 상태를 직접 넣습니다. */
+    private Claim claim(Long id, LostItem lostItem, ClaimStatus status) {
+        Claim claim = Claim.builder()
+                .lostItem(lostItem)
+                .claimerName("학생" + id)
+                .description("학생증이 있습니다")
+                .build();
+        ReflectionTestUtils.setField(claim, "id", id);
+        ReflectionTestUtils.setField(claim, "status", status);
+        return claim;
     }
 }
