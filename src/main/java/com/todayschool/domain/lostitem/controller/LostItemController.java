@@ -6,6 +6,8 @@ import com.todayschool.domain.lostitem.dto.ClaimResponse;
 import com.todayschool.domain.lostitem.dto.LostItemCreateRequest;
 import com.todayschool.domain.lostitem.dto.LostItemResponse;
 import com.todayschool.domain.lostitem.dto.LostItemUpdateRequest;
+import com.todayschool.domain.lostitem.entity.ItemCategory;
+import com.todayschool.domain.lostitem.entity.ItemStatus;
 import com.todayschool.domain.lostitem.service.LostItemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "분실물")
@@ -40,6 +43,17 @@ public class LostItemController {
         LostItemResponse lostItem = lostItemService.createLostItem(request);
         return ResponseEntity.created(URI.create("/api/lost-items/" + lostItem.id()))
                 .body(ApiResponse.ok(lostItem));
+    }
+
+    @Operation(summary = "습득물 조건 검색",
+            description = "조건은 모두 선택이며 함께 쓸 수 있습니다. 장소·키워드는 부분 일치, 최신 발견일 순입니다.")
+    @GetMapping
+    public ApiResponse<List<LostItemResponse>> searchLostItems(
+            @RequestParam(required = false) ItemCategory category,
+            @RequestParam(required = false) String place,
+            @RequestParam(required = false) ItemStatus status,
+            @RequestParam(required = false) String keyword) {
+        return ApiResponse.ok(lostItemService.searchLostItems(category, place, status, keyword));
     }
 
     @Operation(summary = "습득물 상세 조회")

@@ -5,6 +5,8 @@ import static com.todayschool.global.exception.ErrorCode.LOST_ITEM_NOT_FOUND;
 
 import com.todayschool.global.exception.BusinessException;
 import com.todayschool.domain.lostitem.entity.Claim;
+import com.todayschool.domain.lostitem.entity.ItemCategory;
+import com.todayschool.domain.lostitem.entity.ItemStatus;
 import com.todayschool.domain.lostitem.entity.LostItem;
 import com.todayschool.domain.lostitem.dto.ClaimCreateRequest;
 import com.todayschool.domain.lostitem.dto.ClaimResponse;
@@ -37,6 +39,14 @@ public class LostItemServiceImpl implements LostItemService {
                 .foundDate(request.foundDate())
                 .build();
         return toResponse(lostItemRepository.save(lostItem));
+    }
+
+    @Override
+    public List<LostItemResponse> searchLostItems(ItemCategory category, String place, ItemStatus status,
+                                                  String keyword) {
+        return lostItemRepository.search(category, place, status, keyword).stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override

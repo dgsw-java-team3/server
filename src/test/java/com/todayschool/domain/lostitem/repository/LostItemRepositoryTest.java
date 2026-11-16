@@ -7,14 +7,18 @@ import com.todayschool.domain.lostitem.entity.ClaimStatus;
 import com.todayschool.domain.lostitem.entity.ItemCategory;
 import com.todayschool.domain.lostitem.entity.ItemStatus;
 import com.todayschool.domain.lostitem.entity.LostItem;
+import com.todayschool.global.config.QuerydslConfig;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
+/** @DataJpaTest는 JPA 빈만 올리므로 검색에 쓰는 JPAQueryFactory 설정을 직접 불러옵니다. */
 @DataJpaTest
+@Import(QuerydslConfig.class)
 class LostItemRepositoryTest {
 
     @Autowired
