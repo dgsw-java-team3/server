@@ -8,6 +8,8 @@ import com.todayschool.domain.reservation.dto.RoomResponse;
 import com.todayschool.domain.reservation.dto.RoomUpdateRequest;
 import com.todayschool.domain.reservation.repository.ReservationRepository;
 import com.todayschool.domain.reservation.repository.RoomRepository;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -64,5 +66,16 @@ public class RoomServiceImpl implements RoomService {
             throw new BusinessException(ErrorCode.ROOM_HAS_RESERVATIONS);
         }
         roomRepository.delete(room);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoomResponse> getAvailableRooms(LocalDate date, LocalTime startTime, LocalTime endTime) {
+        if (!startTime.isBefore(endTime)) {
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_TIME);
+        }
+        return roomRepository.findAvailableRooms(date, startTime, endTime).stream()
+                .map(RoomResponse::from)
+                .toList();
     }
 }

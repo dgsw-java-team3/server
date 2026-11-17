@@ -6,8 +6,11 @@ import com.todayschool.domain.reservation.dto.RoomResponse;
 import com.todayschool.domain.reservation.dto.RoomUpdateRequest;
 import com.todayschool.domain.reservation.service.RoomService;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -52,5 +56,14 @@ public class RoomController {
     public ApiResponse<Void> deleteRoom(@PathVariable Long roomId) {
         roomService.deleteRoom(roomId);
         return ApiResponse.ok(null, "호실이 삭제되었습니다.");
+    }
+
+    /** B-9 빈 호실 조회. 날짜(yyyy-MM-dd)와 시작·종료 시각(HH:mm)은 모두 필수입니다. */
+    @GetMapping("/available")
+    public ApiResponse<List<RoomResponse>> getAvailableRooms(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime) {
+        return ApiResponse.ok(roomService.getAvailableRooms(date, startTime, endTime));
     }
 }
