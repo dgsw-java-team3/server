@@ -23,6 +23,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -165,5 +167,39 @@ class ReservationServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
                 .isEqualTo(ErrorCode.RESERVATION_NOT_FOUND);
+    }
+
+    @ParameterizedTest(name = "예약 생성 시 {0} ~ {1}이면 시간 순서 오류")
+    @CsvSource({"12:00, 12:00", "13:00, 12:00", "23:59, 00:00"})
+    @DisplayName("예약 생성 시 시작 시각이 종료 시각보다 늦거나 같으면 저장하지 않는다")
+    void createReservation_invalidTimeOrder(LocalTime start, LocalTime end) {
+        assertThatThrownBy(() -> reservationService.createReservation(request(start, end)))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_RESERVATION_TIME);
+        verify(reservationRepository, never()).save(any());
+    }
+
+    @ParameterizedTest(name = "예약 변경 시 {0} ~ {1}이면 시간 순서 오류")
+    @CsvSource({"12:00, 12:00", "13:00, 12:00"})
+    @DisplayName("예약 변경 시 시작 시각이 종료 시각보다 늦거나 같으면 겹침 검사 전에 거절한다")
+    void updateReservation_invalidTimeOrder(LocalTime start, LocalTime end) {
+        assertThatThrownBy(() -> reservationService.updateReservation(5L, updateRequest(start, end)))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_RESERVATION_TIME);
+        verify(reservationRepository, never()).existsOverlapping(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("없는 예약을 취소하면 RESERVATION_NOT_FOUND 예외가 발생하고 삭제하지 않는다")
+    void cancelReservation_notFound_throwsException() {
+        given(reservationRepository.findById(99L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> reservationService.cancelReservation(99L))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.RESERVATION_NOT_FOUND);
+        verify(reservationRepository, never()).delete(any());
     }
 }
