@@ -2,6 +2,7 @@ package com.todayschool.domain.reservation.service;
 
 import com.todayschool.domain.reservation.dto.ReservationCreateRequest;
 import com.todayschool.domain.reservation.dto.ReservationResponse;
+import com.todayschool.domain.reservation.dto.ReservationUpdateRequest;
 import com.todayschool.domain.reservation.entity.Reservation;
 import com.todayschool.domain.reservation.entity.Room;
 import com.todayschool.domain.reservation.repository.ReservationRepository;
@@ -32,7 +33,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
         // 같은 호실·날짜에서 시간이 겹치면 저장하지 않습니다.
         if (reservationRepository.existsOverlapping(
-                request.roomId(), request.reservationDate(), request.startTime(), request.endTime())) {
+                request.roomId(), request.reservationDate(), request.startTime(), request.endTime(), null)) {
             throw new BusinessException(ErrorCode.RESERVATION_CONFLICT);
         }
         Reservation reservation = Reservation.builder()
@@ -60,5 +61,22 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
         reservationRepository.delete(reservation);
+    }
+
+    @Override
+    @Transactional
+    public ReservationResponse updateReservation(Long reservationId, ReservationUpdateRequest request) {
+        if (!request.startTime().isBefore(request.endTime())) {
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_TIME);
+        }
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+        // 본인 예약은 검사 대상에서 제외해야 같은 시간대로 목적만 바꾸는 경우에도 409가 나지 않습니다.
+        if (reservationRepository.existsOverlapping(reservation.getRoom().getId(),
+                request.reservationDate(), request.startTime(), request.endTime(), reservationId)) {
+            throw new BusinessException(ErrorCode.RESERVATION_CONFLICT);
+        }
+        reservation.update(request.reservationDate(), request.startTime(), request.endTime(), request.purpose());
+        return ReservationResponse.from(reservation);
     }
 }

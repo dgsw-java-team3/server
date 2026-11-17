@@ -2,6 +2,7 @@ package com.todayschool.domain.reservation.service;
 
 import com.todayschool.domain.reservation.dto.ReservationCreateRequest;
 import com.todayschool.domain.reservation.dto.ReservationResponse;
+import com.todayschool.domain.reservation.dto.ReservationUpdateRequest;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,4 +20,10 @@ public interface ReservationService {
 
     /** 예약을 취소(삭제)합니다. 없으면 RESERVATION_NOT_FOUND 예외가 발생합니다. */
     void cancelReservation(Long reservationId);
+
+    /**
+     * 예약을 변경합니다. 없으면 RESERVATION_NOT_FOUND, 시간 순서가 잘못되면 INVALID_RESERVATION_TIME,
+     * 본인 예약을 제외한 다른 예약과 겹치면 RESERVATION_CONFLICT 예외가 발생합니다.
+     */
+    ReservationResponse updateReservation(Long reservationId, ReservationUpdateRequest request);
 }

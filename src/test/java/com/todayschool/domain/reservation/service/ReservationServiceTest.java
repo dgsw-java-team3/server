@@ -52,7 +52,7 @@ class ReservationServiceTest {
     @DisplayName("겹치지 않는 시간에 예약하면 저장된다")
     void createReservation_success() {
         given(roomRepository.findById(ROOM_ID)).willReturn(Optional.of(room()));
-        given(reservationRepository.existsOverlapping(any(), any(), any(), any())).willReturn(false);
+        given(reservationRepository.existsOverlapping(any(), any(), any(), any(), any())).willReturn(false);
         given(reservationRepository.save(any(Reservation.class))).willAnswer(inv -> inv.getArgument(0));
 
         ReservationResponse response =
@@ -71,7 +71,7 @@ class ReservationServiceTest {
         LocalTime start = LocalTime.of(11, 0);
         LocalTime end = LocalTime.of(13, 0);
         given(roomRepository.findById(ROOM_ID)).willReturn(Optional.of(room()));
-        given(reservationRepository.existsOverlapping(ROOM_ID, DATE, start, end)).willReturn(true);
+        given(reservationRepository.existsOverlapping(ROOM_ID, DATE, start, end, null)).willReturn(true);
 
         assertThatThrownBy(() -> reservationService.createReservation(request(start, end)))
                 .isInstanceOf(BusinessException.class)

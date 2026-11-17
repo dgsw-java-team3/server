@@ -17,6 +17,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     /**
      * 같은 호실·같은 날짜에 시간이 겹치는 예약이 있는지 확인합니다.
      * 기존.start < 새.end 그리고 기존.end > 새.start 이면 겹치며, 맞닿는 경계(10:00 종료/10:00 시작)는 겹치지 않습니다.
+     * excludeId가 있으면 그 예약은 검사 대상에서 제외합니다. (예약 변경 시 본인 예약)
      */
     @Query("""
             select count(r) > 0 from Reservation r
@@ -24,12 +25,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
               and r.reservationDate = :date
               and r.startTime < :endTime
               and r.endTime > :startTime
+              and (:excludeId is null or r.id <> :excludeId)
             """)
     boolean existsOverlapping(
             @Param("roomId") Long roomId,
             @Param("date") LocalDate date,
             @Param("startTime") LocalTime startTime,
-            @Param("endTime") LocalTime endTime);
+            @Param("endTime") LocalTime endTime,
+            @Param("excludeId") Long excludeId);
 
     /**
      * 호실·날짜 조건으로 예약을 조회합니다. 조건은 모두 선택이며, null이면 그 조건은 적용하지 않습니다.

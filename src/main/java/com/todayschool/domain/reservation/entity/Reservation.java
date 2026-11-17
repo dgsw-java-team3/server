@@ -55,4 +55,12 @@ public class Reservation extends BaseTimeEntity {
         this.reserverName = reserverName;
         this.purpose = purpose;
     }
+
+    /** 예약 날짜, 시간, 목적을 변경합니다. */
+    public void update(LocalDate reservationDate, LocalTime startTime, LocalTime endTime, String purpose) {
+        this.reservationDate = reservationDate;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.purpose = purpose;
+    }
 }
