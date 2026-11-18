@@ -50,7 +50,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional(readOnly = true)
     public List<ReservationResponse> getReservations(Long roomId, LocalDate date) {
-        return reservationRepository.findAllByCondition(roomId, date).stream()
+        return reservationRepository.search(roomId, date).stream()
                 .map(ReservationResponse::from)
                 .toList();
     }

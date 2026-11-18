@@ -122,4 +122,38 @@ class ReservationRepositoryTest {
         assertThat(touching).extracting(Room::getId).contains(room.getId());
         assertThat(otherDate).extracting(Room::getId).contains(room.getId());
     }
+
+    @Test
+    @DisplayName("조건 조회(QueryDSL)는 호실·날짜 조건을 함께 쓰면 둘 다 맞는 예약만 날짜·시작 시각 순으로 돌려준다")
+    void search_withRoomAndDate() {
+        reservationRepository.save(reservation(room, DATE, 8, 9));
+        reservationRepository.save(reservation(room, DATE.plusDays(1), 8, 9));
+
+        List<Reservation> result = reservationRepository.search(room.getId(), DATE);
+
+        assertThat(result).extracting(Reservation::getStartTime)
+                .containsExactly(LocalTime.of(8, 0), LocalTime.of(10, 0));
+    }
+
+    @Test
+    @DisplayName("조건 조회(QueryDSL)는 호실 조건만 있으면 모든 날짜의 예약을 날짜 순으로 돌려준다")
+    void search_withRoomOnly() {
+        reservationRepository.save(reservation(room, DATE.plusDays(1), 8, 9));
+
+        List<Reservation> result = reservationRepository.search(room.getId(), null);
+
+        assertThat(result).extracting(Reservation::getReservationDate)
+                .containsExactly(DATE, DATE.plusDays(1));
+    }
+
+    @Test
+    @DisplayName("조건 조회(QueryDSL)는 조건이 없으면 전체를, 날짜만 있으면 그 날짜 예약만 돌려준다")
+    void search_withoutConditionOrDateOnly() {
+        List<Reservation> all = reservationRepository.search(null, null);
+        List<Reservation> byDate = reservationRepository.search(null, DATE);
+
+        assertThat(all).hasSize((int) reservationRepository.count());
+        assertThat(byDate).isNotEmpty().allMatch(r -> r.getReservationDate().equals(DATE));
+        assertThat(byDate).extracting(Reservation::getId).contains(base.getId());
+    }
 }
