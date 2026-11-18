@@ -31,6 +31,9 @@ public enum ErrorCode {
     // C. 분실물 게시판
     LOST_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "습득물을 찾을 수 없습니다."),
     LOST_ITEM_ALREADY_RETURNED(HttpStatus.CONFLICT, "이미 반환 완료된 습득물입니다."),
+    CLAIM_NOT_FOUND(HttpStatus.NOT_FOUND, "반환 신청을 찾을 수 없습니다."),
+    CLAIM_STATUS_INVALID(HttpStatus.BAD_REQUEST, "신청은 승인(APPROVED) 또는 거절(REJECTED)로만 처리할 수 있습니다."),
+    CLAIM_ALREADY_PROCESSED(HttpStatus.CONFLICT, "이미 처리된 반환 신청입니다."),
     ;
 
     private final HttpStatus status;

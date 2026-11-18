@@ -47,4 +47,16 @@ public class Claim extends BaseTimeEntity {
         this.description = description;
         this.status = ClaimStatus.PENDING;
     }
+
+    public boolean isPending() {
+        return status == ClaimStatus.PENDING;
+    }
+
+    public void approve() {
+        this.status = ClaimStatus.APPROVED;
+    }
+
+    public void reject() {
+        this.status = ClaimStatus.REJECTED;
+    }
 }
