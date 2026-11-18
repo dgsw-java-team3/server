@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.todayschool.domain.reservation.entity.Reservation;
 import com.todayschool.domain.reservation.entity.Room;
+import com.todayschool.global.config.QuerydslConfig;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -12,9 +13,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
-/** data.sql도 함께 적재되므로, 테스트용 호실을 따로 만들어 그 호실 기준으로만 검증합니다. */
+/**
+ * data.sql도 함께 적재되므로, 테스트용 호실을 따로 만들어 그 호실 기준으로만 검증합니다.
+ * JPA 슬라이스는 QueryDSL 커스텀 Repository도 함께 올리므로 JPAQueryFactory 설정을 가져옵니다.
+ */
 @DataJpaTest
+@Import(QuerydslConfig.class)
 class ReservationRepositoryTest {
 
     private static final LocalDate DATE = LocalDate.of(2026, 12, 1);
