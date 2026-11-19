@@ -5,7 +5,11 @@ import com.todayschool.global.exception.ErrorCode;
 import com.todayschool.domain.reservation.entity.Room;
 import com.todayschool.domain.reservation.dto.RoomCreateRequest;
 import com.todayschool.domain.reservation.dto.RoomResponse;
+import com.todayschool.domain.reservation.dto.RoomUpdateRequest;
+import com.todayschool.domain.reservation.repository.ReservationRepository;
 import com.todayschool.domain.reservation.repository.RoomRepository;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
+    private final ReservationRepository reservationRepository;
 
     @Override
     @Transactional
@@ -41,5 +46,40 @@ public class RoomServiceImpl implements RoomService {
 
     private RoomResponse toResponse(Room room) {
         return new RoomResponse(room.getId(), room.getName(), room.getCapacity(), room.getLocation());
+    }
+
+    @Override
+    @Transactional
+    public RoomResponse updateRoom(Long roomId, RoomUpdateRequest request) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+        // 본인을 제외한 다른 호실과 이름이 겹치는지 검사합니다.
+        if (roomRepository.existsByNameAndIdNot(request.name(), roomId)) {
+            throw new BusinessException(ErrorCode.ROOM_DUPLICATED);
+        }
+        room.update(request.name(), request.capacity(), request.location());
+        return RoomResponse.from(room);
+    }
+
+    @Override
+    @Transactional
+    public void deleteRoom(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+        if (reservationRepository.existsByRoomId(roomId)) {
+            throw new BusinessException(ErrorCode.ROOM_HAS_RESERVATIONS);
+        }
+        roomRepository.delete(room);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoomResponse> getAvailableRooms(LocalDate date, LocalTime startTime, LocalTime endTime) {
+        if (!startTime.isBefore(endTime)) {
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_TIME);
+        }
+        return roomRepository.findAvailableRooms(date, startTime, endTime).stream()
+                .map(RoomResponse::from)
+                .toList();
     }
 }

@@ -36,4 +36,11 @@ public class Room extends BaseTimeEntity {
         this.capacity = capacity;
         this.location = location;
     }
+
+    /** 호실 정보를 수정합니다. */
+    public void update(String name, int capacity, String location) {
+        this.name = name;
+        this.capacity = capacity;
+        this.location = location;
+    }
 }

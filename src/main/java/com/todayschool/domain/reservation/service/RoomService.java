@@ -2,6 +2,9 @@ package com.todayschool.domain.reservation.service;
 
 import com.todayschool.domain.reservation.dto.RoomCreateRequest;
 import com.todayschool.domain.reservation.dto.RoomResponse;
+import com.todayschool.domain.reservation.dto.RoomUpdateRequest;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 /** 호실 등록·조회 비즈니스 로직입니다. */
@@ -12,4 +15,13 @@ public interface RoomService {
 
     /** 등록된 모든 호실을 조회합니다. */
     List<RoomResponse> getRooms();
+
+    /** 호실을 수정합니다. 없으면 ROOM_NOT_FOUND, 이름이 겹치면 ROOM_DUPLICATED 예외가 발생합니다. */
+    RoomResponse updateRoom(Long roomId, RoomUpdateRequest request);
+
+    /** 호실을 삭제합니다. 없으면 ROOM_NOT_FOUND, 예약이 남아 있으면 ROOM_HAS_RESERVATIONS 예외가 발생합니다. */
+    void deleteRoom(Long roomId);
+
+    /** 해당 시간대에 예약이 없는 호실을 조회합니다. 시작 시각이 종료 시각보다 늦거나 같으면 INVALID_RESERVATION_TIME 예외가 발생합니다. */
+    List<RoomResponse> getAvailableRooms(LocalDate date, LocalTime startTime, LocalTime endTime);
 }
