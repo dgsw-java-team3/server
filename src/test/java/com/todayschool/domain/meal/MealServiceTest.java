@@ -13,6 +13,7 @@ import com.todayschool.domain.meal.dto.MealUpdateRequest;
 import com.todayschool.domain.meal.entity.Meal;
 import com.todayschool.domain.meal.entity.MealType;
 import com.todayschool.domain.meal.repository.MealRepository;
+import com.todayschool.domain.meal.repository.ReviewRepository;
 import com.todayschool.domain.meal.service.MealServiceImpl;
 import com.todayschool.global.exception.BusinessException;
 import com.todayschool.global.exception.ErrorCode;
@@ -30,6 +31,8 @@ class MealServiceTest {
 
     @Mock
     private MealRepository mealRepository;
+    @Mock
+    private ReviewRepository reviewRepository;
     @InjectMocks
     private MealServiceImpl service;
     private final LocalDate date = LocalDate.of(2026, 11, 10);
@@ -66,21 +69,22 @@ class MealServiceTest {
     void updateChangesManagedEntityAndKeepsOwnDateAllowed() {
         var meal = new Meal(date, MealType.LUNCH, "기존 메뉴");
         when(mealRepository.findById(1L)).thenReturn(Optional.of(meal));
-        var result = service.updateMeal(1L, new MealUpdateRequest(date, MealType.LUNCH, "새 메뉴"));
+        var result = service.updateMeal(1L, new MealUpdateRequest("새 메뉴"));
         assertThat(result.menu()).isEqualTo("새 메뉴");
-        verify(mealRepository).existsByDateAndMealTypeAndIdNot(date, MealType.LUNCH, 1L);
+        assertThat(result.date()).isEqualTo(date);
+        assertThat(result.mealType()).isEqualTo(MealType.LUNCH);
         verify(mealRepository).flush();
     }
 
     @Test
-    @DisplayName("중복되는 날짜와 구분으로 수정할 수 없다")
-    void duplicateUpdateDoesNotChangeEntity() {
-        var meal = new Meal(date, MealType.LUNCH, "기존 메뉴");
-        when(mealRepository.findById(1L)).thenReturn(Optional.of(meal));
-        when(mealRepository.existsByDateAndMealTypeAndIdNot(date, MealType.DINNER, 1L)).thenReturn(true);
-        assertThatThrownBy(() -> service.updateMeal(1L, new MealUpdateRequest(date, MealType.DINNER, "새 메뉴")))
-                .isInstanceOf(BusinessException.class);
-        assertThat(meal.getMenu()).isEqualTo("기존 메뉴");
+    @DisplayName("순위 조회의 기간이 잘못되면 DB를 조회하지 않는다")
+    void invalidRankingPeriodDoesNotQuery() {
+        assertThatThrownBy(() -> service.getMealRanking(date.plusDays(1), date))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT_VALUE));
+        assertThatThrownBy(() -> service.getMealRanking(null, date)).isInstanceOf(BusinessException.class);
+        assertThatThrownBy(() -> service.getMealRanking(date, null)).isInstanceOf(BusinessException.class);
+        verifyNoInteractions(reviewRepository);
     }
 
     @Test

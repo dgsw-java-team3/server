@@ -1,6 +1,8 @@
 package com.todayschool.domain.meal.controller;
 
 import com.todayschool.domain.meal.dto.MealCreateRequest;
+import com.todayschool.domain.meal.dto.MealDetailResponse;
+import com.todayschool.domain.meal.dto.MealRankingResponse;
 import com.todayschool.domain.meal.dto.MealPageResponse;
 import com.todayschool.domain.meal.dto.MealResponse;
 import com.todayschool.domain.meal.dto.MealUpdateRequest;
@@ -14,6 +16,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -51,20 +54,30 @@ public class MealController {
         return ApiResponse.ok(mealService.getMeals(date, page, size));
     }
 
-    @Operation(summary = "급식 상세 조회")
+    @Operation(summary = "기간별 평균 별점 순위 조회",
+            description = "급식 날짜가 startDate~endDate(양끝 포함)인 급식 중 리뷰가 있는 것만 조회합니다. "
+                    + "평균 별점 내림차순, 리뷰 수 내림차순, ID 오름차순입니다.")
+    @GetMapping("/ranking")
+    public ApiResponse<List<MealRankingResponse>> getMealRanking(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return ApiResponse.ok(mealService.getMealRanking(startDate, endDate));
+    }
+
+    @Operation(summary = "급식 상세 조회", description = "메뉴, 평균 별점, 리뷰 수를 반환합니다. 리뷰가 없으면 평균 별점은 0입니다.")
     @GetMapping("/{mealId}")
-    public ApiResponse<MealResponse> getMeal(@PathVariable @Positive Long mealId) {
+    public ApiResponse<MealDetailResponse> getMeal(@PathVariable @Positive Long mealId) {
         return ApiResponse.ok(mealService.getMeal(mealId));
     }
 
-    @Operation(summary = "급식 수정", description = "date, mealType, menu를 모두 보내는 PUT 요청입니다.")
+    @Operation(summary = "급식 메뉴 수정", description = "menu만 입력합니다. 날짜와 끼니는 유지됩니다.")
     @PutMapping("/{mealId}")
     public ApiResponse<MealResponse> updateMeal(@PathVariable @Positive Long mealId,
                                               @Valid @RequestBody MealUpdateRequest request) {
         return ApiResponse.ok(mealService.updateMeal(mealId, request));
     }
 
-    @Operation(summary = "급식 삭제")
+    @Operation(summary = "급식 삭제", description = "급식에 연결된 리뷰도 함께 삭제됩니다.")
     @DeleteMapping("/{mealId}")
     public ApiResponse<Void> deleteMeal(@PathVariable @Positive Long mealId) {
         mealService.deleteMeal(mealId);

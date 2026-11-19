@@ -37,12 +37,12 @@ public class Meal extends BaseTimeEntity {
     private String menu;
 
     public Meal(LocalDate date, MealType mealType, String menu) {
-        update(date, mealType, menu);
-    }
-
-    public void update(LocalDate date, MealType mealType, String menu) {
         this.date = date;
         this.mealType = mealType;
+        updateMenu(menu);
+    }
+
+    public void updateMenu(String menu) {
         this.menu = menu.strip();
     }
 }

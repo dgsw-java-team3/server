@@ -45,10 +45,12 @@ class MealIntegrationTest {
         mvc.perform(get("/api/meals/6")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.menu").value("볶음밥"));
         mvc.perform(put("/api/meals/6").contentType(MediaType.APPLICATION_JSON).content("""
-                {"date":"2026-11-12","mealType":"LUNCH","menu":"김치볶음밥"}
+                {"menu":"김치볶음밥"}
                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.menu").value("김치볶음밥"));
+                .andExpect(jsonPath("$.data.menu").value("김치볶음밥"))
+                .andExpect(jsonPath("$.data.date").value("2026-11-12"))
+                .andExpect(jsonPath("$.data.mealType").value("LUNCH"));
         mvc.perform(get("/api/meals/6")).andExpect(jsonPath("$.data.menu").value("김치볶음밥"));
         mvc.perform(delete("/api/meals/6")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -77,15 +79,12 @@ class MealIntegrationTest {
     }
 
     @Test
-    @DisplayName("중복 등록과 수정은 기존 데이터를 유지한다")
-    void duplicateCreateAndUpdateAre409AndKeepDatabaseUnchanged() throws Exception {
+    @DisplayName("중복 등록은 기존 데이터를 유지한다")
+    void duplicateCreateIs409AndKeepsDatabaseUnchanged() throws Exception {
         String body = """
                 {"date":"2026-11-10","mealType":"LUNCH","menu":"중복"}
                 """;
         mvc.perform(post("/api/meals").contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error.code").value("DUPLICATE_MEAL"));
-        mvc.perform(put("/api/meals/3").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error.code").value("DUPLICATE_MEAL"));
         mvc.perform(get("/api/meals/3")).andExpect(jsonPath("$.data.mealType").value("DINNER"));
@@ -98,7 +97,7 @@ class MealIntegrationTest {
         mvc.perform(get("/api/meals/999")).andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error.code").value("MEAL_NOT_FOUND"));
         mvc.perform(put("/api/meals/999").contentType(MediaType.APPLICATION_JSON).content("""
-                {"date":"2026-11-12","mealType":"LUNCH","menu":"메뉴"}
+                {"menu":"메뉴"}
                 """))
                 .andExpect(status().isNotFound());
         mvc.perform(delete("/api/meals/999")).andExpect(status().isNotFound());
@@ -126,13 +125,17 @@ class MealIntegrationTest {
     }
 
     @Test
-    @DisplayName("급식 API 5개가 OpenAPI에 포함된다")
+    @DisplayName("급식 API 9개가 OpenAPI에 포함된다")
     void openApiDocumentsMealCrud() throws Exception {
         mvc.perform(get("/v3/api-docs")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.paths['/api/meals'].get").exists())
                 .andExpect(jsonPath("$.paths['/api/meals'].post").exists())
                 .andExpect(jsonPath("$.paths['/api/meals/{mealId}'].get").exists())
                 .andExpect(jsonPath("$.paths['/api/meals/{mealId}'].put").exists())
-                .andExpect(jsonPath("$.paths['/api/meals/{mealId}'].delete").exists());
+                .andExpect(jsonPath("$.paths['/api/meals/{mealId}'].delete").exists())
+                .andExpect(jsonPath("$.paths['/api/meals/{mealId}/reviews'].post").exists())
+                .andExpect(jsonPath("$.paths['/api/meals/{mealId}/reviews'].get").exists())
+                .andExpect(jsonPath("$.paths['/api/reviews/{reviewId}'].delete").exists())
+                .andExpect(jsonPath("$.paths['/api/meals/ranking'].get").exists());
     }
 }
