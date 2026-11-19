@@ -30,12 +30,16 @@ public class RoomServiceImpl implements RoomService {
                 .capacity(request.capacity())
                 .location(request.location())
                 .build();
-        return RoomResponse.from(roomRepository.save(room));
+        return toResponse(roomRepository.save(room));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<RoomResponse> getRooms() {
-        return roomRepository.findAll().stream().map(RoomResponse::from).toList();
+        return roomRepository.findAll().stream().map(this::toResponse).toList();
+    }
+
+    private RoomResponse toResponse(Room room) {
+        return new RoomResponse(room.getId(), room.getName(), room.getCapacity(), room.getLocation());
     }
 }
