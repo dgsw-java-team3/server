@@ -58,7 +58,7 @@ public class RoomServiceImpl implements RoomService {
             throw new BusinessException(ErrorCode.ROOM_DUPLICATED);
         }
         room.update(request.name(), request.capacity(), request.location());
-        return RoomResponse.from(room);
+        return toResponse(room);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class RoomServiceImpl implements RoomService {
             throw new BusinessException(ErrorCode.INVALID_RESERVATION_TIME);
         }
         return roomRepository.findAvailableRooms(date, startTime, endTime).stream()
-                .map(RoomResponse::from)
+                .map(this::toResponse)
                 .toList();
     }
 }
