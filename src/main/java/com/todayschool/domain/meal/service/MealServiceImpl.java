@@ -5,13 +5,17 @@ import static com.todayschool.global.exception.ErrorCode.INVALID_INPUT_VALUE;
 import static com.todayschool.global.exception.ErrorCode.MEAL_NOT_FOUND;
 
 import com.todayschool.domain.meal.dto.MealCreateRequest;
+import com.todayschool.domain.meal.dto.MealDetailResponse;
+import com.todayschool.domain.meal.dto.MealRankingResponse;
 import com.todayschool.domain.meal.dto.MealPageResponse;
 import com.todayschool.domain.meal.dto.MealResponse;
 import com.todayschool.domain.meal.dto.MealUpdateRequest;
 import com.todayschool.domain.meal.entity.Meal;
 import com.todayschool.domain.meal.repository.MealRepository;
+import com.todayschool.domain.meal.repository.ReviewRepository;
 import com.todayschool.global.exception.BusinessException;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -26,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MealServiceImpl implements MealService {
 
     private final MealRepository mealRepository;
+    private final ReviewRepository reviewRepository;
 
     @Override
     @Transactional
@@ -52,23 +57,28 @@ public class MealServiceImpl implements MealService {
     }
 
     @Override
-    public MealResponse getMeal(Long mealId) {
-        return toResponse(findMeal(mealId));
+    public MealDetailResponse getMeal(Long mealId) {
+        Meal meal = findMeal(mealId);
+        ReviewRepository.ReviewSummary summary = reviewRepository.summarizeByMealId(mealId);
+        return new MealDetailResponse(meal.getId(), meal.getDate(), meal.getMealType(), meal.getMenu(),
+                meal.getCreatedAt(), meal.getUpdatedAt(),
+                summary.getAverageRating() == null ? 0.0 : summary.getAverageRating(), summary.getReviewCount());
+    }
+
+    @Override
+    public List<MealRankingResponse> getMealRanking(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null || startDate.isAfter(endDate)) {
+            throw new BusinessException(INVALID_INPUT_VALUE);
+        }
+        return reviewRepository.findMealRanking(startDate, endDate);
     }
 
     @Override
     @Transactional
     public MealResponse updateMeal(Long mealId, MealUpdateRequest request) {
         Meal meal = findMeal(mealId);
-        if (mealRepository.existsByDateAndMealTypeAndIdNot(request.date(), request.mealType(), mealId)) {
-            throw new BusinessException(DUPLICATE_MEAL);
-        }
-        meal.update(request.date(), request.mealType(), request.menu());
-        try {
-            mealRepository.flush();
-        } catch (DataIntegrityViolationException exception) {
-            throw new BusinessException(DUPLICATE_MEAL);
-        }
+        meal.updateMenu(request.menu());
+        mealRepository.flush();
         return toResponse(meal);
     }
 

@@ -18,6 +18,7 @@ public enum ErrorCode {
 
     // A. 급식 만족도
     MEAL_NOT_FOUND(HttpStatus.NOT_FOUND, "급식을 찾을 수 없습니다."),
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."),
     DUPLICATE_MEAL(HttpStatus.CONFLICT, "해당 날짜와 구분의 급식이 이미 있습니다."),
 
     // B. 실습실 예약

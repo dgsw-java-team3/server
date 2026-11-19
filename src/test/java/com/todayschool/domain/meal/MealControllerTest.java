@@ -122,9 +122,9 @@ class MealControllerTest {
     }
 
     @Test
-    @DisplayName("급식 수정에는 날짜, 구분, 메뉴가 모두 필요하다")
-    void putRequiresAllFields() throws Exception {
-        mvc.perform(put("/api/meals/1").contentType(MediaType.APPLICATION_JSON).content("{\"menu\":\"메뉴\"}"))
+    @DisplayName("급식 수정에는 메뉴가 필요하다")
+    void putRequiresMenu() throws Exception {
+        mvc.perform(put("/api/meals/1").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(mealService);
     }
